@@ -1,8 +1,10 @@
-// Solve maze at compile time
+// Solve maze at compile time.
+// Look at clang's assembly output; solution is at bottom.
 // Todd Fleming 2017
 
 #include <stdio.h>
 #include <tuple>
+#include <initializer_list>
 
 using namespace std;
 
@@ -11,6 +13,10 @@ struct Maze
 {
     char s[rows][cols + 1];
 };
+
+// Calculate size of maze from constructor args
+template <int i, typename... Args>
+Maze(const char (&arg0)[i], Args... args)->Maze<sizeof...(Args) + 1, i - 1>;
 
 template <int rows, int cols>
 constexpr auto find(const Maze<rows, cols> &m, char c)
@@ -22,6 +28,7 @@ constexpr auto find(const Maze<rows, cols> &m, char c)
     throw std::runtime_error("char not found");
 }
 
+// Lazy approach: depth-first search
 template <typename T>
 constexpr bool solve(T &m, int row, int col)
 {
@@ -48,7 +55,7 @@ constexpr T solve(T m)
 
 int main()
 {
-    constexpr auto m = solve(Maze<13, 30>{
+    constexpr auto m = solve(Maze{
         "##############################",
         "#               ###          #",
         "### ####### ### ######### ####",
